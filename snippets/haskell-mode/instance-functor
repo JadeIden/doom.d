@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: instance-functor
+# uuid: haskell-instance-functor
+# --
+instance Functor $1 where
+  fmap x = $0

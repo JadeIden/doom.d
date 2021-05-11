@@ -1,0 +1,149 @@
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+
+;; Place your private configuration here! Remember, you do not need to run 'doom
+;; sync' after modifying this file!
+
+
+;; Some functionality uses this to identify you, e.g. GPG configuration, email
+;; clients, file templates and snippets.
+(setq user-full-name "John Doe"
+      user-mail-address "john@doe.com")
+
+(setq doom-theme 'doom-one)
+
+(setq org-directory "~/org/")
+
+(setq display-line-numbers-type 'relative)
+
+
+(defun get-or-prompt-to-dir-locals (mode key)
+  (interactive)
+  (if
+      (boundp key)
+      (symbol-value key)
+      (add-dir-local-variable mode key (read-directory-name (concat "Enter name for " (symbol-name key) ": "))))
+)
+
+(defun custom-run-npm ()
+  (interactive)
+  (let ((default-directory (get-or-prompt-to-dir-locals nil 'custom-run-npm-path)))
+    (compile "npm start")
+    (display-buffer-in-side-window "Compilation" '((side . right)))
+  )
+)
+
+(defun open-current-file ()
+  (interactive)
+  (let ((selected-file (neo-buffer--get-filename-current-line)) (term-buffer (term "/usr/bin/python3")))
+    (set-buffer term-buffer)
+    (term-send-raw-string "import json\n")
+    (term-send-raw-string (format "JSON_FILENAME = r\"%s\"\n" selected-file))
+    (term-send-raw-string "with open(JSON_FILENAME, \"r\") as f:\n")
+    (term-send-raw-string "\tdata = json.load(f)\n\n")
+  )
+  )
+
+(defun my/open-todays-file ()
+  (interactive)
+  (find-file (expand-file-name (concat org-roam-directory "/" (format-time-string "%Y-%m-%d.org"))))
+)
+
+;; Lazy run commands
+(map! :leader
+      (:prefix ("r" . "run")
+       :desc "Run npm start" "n" #'custom-run-npm
+       ))
+
+(map! :map doom-leader-notes-map (:prefix ("r" . "roam")
+                                  :desc "Find file" "f" #'org-roam-find-file
+                                  :desc "Open today's file" "r" #'my/open-todays-file
+                                  ))
+
+(evil-define-key 'normal neotree-mode-map (kbd "j") 'open-current-file)
+
+(map! :map evil-window-map "<up>" #'evil-window-up)
+(map! :map evil-window-map "<down>" #'evil-window-down)
+(map! :map evil-window-map "<left>" #'evil-window-left)
+(map! :map evil-window-map "<right>" #'evil-window-right)
+
+(setq gdscript-godot-executable "~/Godot_v3.2.1-stable_x11.64")
+
+(add-hook 'doc-view-mode-hook 'auto-revert-mode)
+
+
+;; Here are some additional functions/macros that could help you configure Doom:
+;;
+;; - `load!' for loading external *.el files relative to this one
+;; - `use-package!' for configuring packages
+;; - `after!' for running code after a package has loaded
+;; - `add-load-path!' for adding directories to the `load-path', relative to
+;;   this file. Emacs searches the `load-path' when you load packages with
+;;   `require' or `use-package'.
+;; - `map!' for binding new keys
+;;
+;; To get information about any of these functions/macros, move the cursor over
+;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+;; This will open documentation for it, including demos of how they are used.
+;;
+;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+;; they are implemented.
+(use-package! evil-owl
+  :config
+  (setq evil-owl-max-string-length 500)
+  (add-to-list 'display-buffer-alist
+               '("*evil-owl*"
+                 (display-buffer-in-side-window)
+                 (side . bottom)
+                 (window-height . 0.3)))
+  (evil-owl-mode))
+
+(use-package! org-roam)
+(setq org-roam-directory "~/org-roam")
+(add-hook 'after-init-hook 'org-roam-mode)
+
+(setq lsp-gopls-staticcheck t)
+(setq lsp-eldoc-render-all t)
+(setq lsp-gopls-complete-unimported t)
+
+(use-package! lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (go-mode . lsp-deferred))
+
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+(use-package! company
+  :config
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 1))
+
+(use-package! company-lsp
+  :commands company-lsp)
+
+(setq lsp-ui-doc-enable nil
+      lsp-ui-peek-enable t
+      lsp-ui-sideline-enable t
+      lsp-ui-imenu-enable t
+      lsp-ui-flycheck-enable t)
+;;
+(put 'narrow-to-region 'disabled nil)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages (quote (company-lsp company lsp-mode)))
+ '(safe-local-variable-values
+   (quote
+    ((pyvenv-activate . "./env")
+     (setenv "GOOGLE_APPLICATION_CREDENTIALS" "polar-standard-246307-5ff6b8064ee7.json")
+     (pyenv-activate . "./env")))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
