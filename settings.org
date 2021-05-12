@@ -140,6 +140,16 @@ Go up a level with =..= .
 #+begin_src emacs-lisp :results none
 (add-hook 'compilation-shell-minor-mode 'goto-address-mode)
 #+end_src
+*** Quicker project creation
+#+begin_src emacs-lisp :results none
+(defun my/create-lazy-project (filename)
+  (interactive "MProject name? ")
+    (let ((new-dirname (concat (getenv "HOME") "/Projects/" filename)))
+        (make-directory new-dirname)
+        (funcall-interactively #'projectile-add-known-project new-dirname)))
+(map! :map doom-leader-project-map "n" #'my/create-lazy-project)
+
+#+end_src
 ** Org
 *** Boilerplate settings
 #+begin_src emacs-lisp :results none
@@ -295,6 +305,21 @@ Thanks to ambrevar: https://github.com/joaotavora/sly/issues/360
 Automatically update PDF previews on file change
 #+begin_src emacs-lisp :results none
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+#+end_src
+** Eshell
+*** Custom prompt
+#+begin_src emacs-lisp :results none
+(defun my/eshell-prompt () (concat
+                            (propertize (eshell/pwd) 'face '(:foreground "orchid"))
+                            (propertize " λ" 'face '(:foreground "green"))
+                            " "
+                            ))
+(setq eshell-prompt-function #'my/eshell-prompt)
+#+end_src
+*** "Vi" alias
+#+begin_src emacs-lisp :results none
+(defalias 'eshell/vi 'find-file-other-window)  ;; :^)
+(defalias 'eshell/vim 'find-file-other-window)
 #+end_src
 ** TODO uncategorized
 #+begin_src emacs-lisp :results none

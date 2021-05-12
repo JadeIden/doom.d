@@ -207,6 +207,16 @@ modify it."
 
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
+(defun my/eshell-prompt () (concat
+                            (propertize (eshell/pwd) 'face '(:foreground "orchid"))
+                            (propertize " λ" 'face '(:foreground "green"))
+                            " "
+                            ))
+(setq eshell-prompt-function #'my/eshell-prompt)
+
+(defalias 'eshell/vi 'find-file-other-window)  ;; :^)
+(defalias 'eshell/vim 'find-file-other-window)
+
 (defun get-or-prompt-to-dir-locals (mode key)
   (interactive)
   (if
