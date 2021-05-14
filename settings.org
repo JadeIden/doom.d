@@ -42,6 +42,15 @@ modify it."
        (funcall buffer-create-fn)
        (when switch-cont (funcall switch-cont))))))
 #+end_src
+** Org-Capture server
+Opens a server on http://localhost:8080/capture/<keys>/<contents> that calls org-capture on <contents>,
+with the template <keys>. Run =M-x httpd-start= to start the server.
+#+begin_src emacs-lisp :results none
+;; TODO: this causes runtime errors, since defservlet* is a macro!
+(after! simple-httpd
+    '(defservlet* capture/:keys/:txt text/plain ()
+     (org-capture-string txt keys)))
+#+end_src
 * The actual config
 ** Theming
 #+begin_src emacs-lisp :results none
@@ -148,7 +157,6 @@ Go up a level with =..= .
         (make-directory new-dirname)
         (funcall-interactively #'projectile-add-known-project new-dirname)))
 (map! :map doom-leader-project-map "n" #'my/create-lazy-project)
-
 #+end_src
 ** Org
 *** Boilerplate settings

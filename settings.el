@@ -26,6 +26,11 @@ modify it."
        (funcall buffer-create-fn)
        (when switch-cont (funcall switch-cont))))))
 
+;; TODO: this causes runtime errors, since defservlet* is a macro!
+(after! simple-httpd
+    '(defservlet* capture/:keys/:txt text/plain ()
+       (org-capture-string txt keys)))
+
 (setq doom-theme 'doom-monokai-pro)
 
 (setq display-line-numbers-type 'relative)
@@ -86,6 +91,13 @@ modify it."
 (map! :leader ">" #'my/dired-here)
 
 (add-hook 'compilation-shell-minor-mode 'goto-address-mode)
+
+(defun my/create-lazy-project (filename)
+  (interactive "MProject name? ")
+    (let ((new-dirname (concat (getenv "HOME") "/Projects/" filename)))
+        (make-directory new-dirname)
+        (funcall-interactively #'projectile-add-known-project new-dirname)))
+(map! :map doom-leader-project-map "n" #'my/create-lazy-project)
 
 (setq org-directory "~/org/")
 

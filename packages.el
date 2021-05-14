@@ -37,6 +37,8 @@
 (package! dired-hacks)
 (package! sr-speedbar)
 
+(package! valign)
+
 (when (string= system-type "gnu/linux")
         (package! emacs-application-framework
         :recipe (:host github :repo "manateelazycat/emacs-application-framework" :files ("*")))
