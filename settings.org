@@ -337,43 +337,6 @@ Credit to http://www.howardism.org/Technical/Emacs/eshell-fun.html
     (eshell-send-input)
     (delete-window))
 #+end_src
-** TODO uncategorized
-#+begin_src emacs-lisp :results none
-(defun get-or-prompt-to-dir-locals (mode key)
-  (interactive)
-  (if
-      (boundp key)
-      (symbol-value key)
-      (add-dir-local-variable mode key (read-directory-name (concat "Enter name for " (symbol-name key) ": "))))
-)
-
-(defun custom-run-npm ()
-  (interactive)
-  (let ((default-directory (get-or-prompt-to-dir-locals nil 'custom-run-npm-path)))
-    (compile "npm start")
-    (display-buffer-in-side-window "Compilation" '((side . right)))
-  )
-)
-
-(defun open-current-file ()
-  (interactive)
-  (let ((selected-file (neo-buffer--get-filename-current-line)) (term-buffer (term "/usr/bin/python3")))
-    (set-buffer term-buffer)
-    (term-send-raw-string "import json\n")
-    (term-send-raw-string (format "JSON_FILENAME = r\"%s\"\n" selected-file))
-    (term-send-raw-string "with open(JSON_FILENAME, \"r\") as f:\n")
-    (term-send-raw-string "\tdata = json.load(f)\n\n")
-  ))
-
-;; Lazy run commands
-(map! :leader
-      (:prefix ("r" . "run")
-       :desc "Run npm start" "n" #'custom-run-npm
-       ))
-
-(evil-define-key 'normal neotree-mode-map (kbd "j") 'open-current-file)
-
-#+end_src
 ** Modified evil bindings
 *** Window switching
 Window switching usually only works with hjkl; now it works with arrow keys!
@@ -466,20 +429,6 @@ Helper function that enters an org src block if necessary, then calls the fn.
 (evil-define-minor-mode-key 'normal 'org-src-mode "}}" 'my/jump-to-next-ob-code-block)
 (evil-define-minor-mode-key 'normal 'org-src-mode "{{" 'my/jump-to-prev-ob-code-block)
 #+end_src
-** TODO uncategorized
-#+begin_src emacs-lisp :results none
-(setq gdscript-godot-executable "~/Godot_v3.2.1-stable_x11.64")
-
-;; (use-package! evil-owl
-;;   :config
-;;   (setq evil-owl-max-string-length 500)
-;;   (add-to-list 'display-buffer-alist
-;;                '("*evil-owl*"
-;;                  (display-buffer-in-side-window)
-;;                  (side . bottom)
-;;                  (window-height . 0.3)))
-;;   (evil-owl-mode))
-#+end_src
 ** TODO Go LSP configuration
 Out of the box, the LSP for Go had some weird behavior. When I go back to Go dev,
 I should figure out what exactly I do and do not need.
@@ -548,3 +497,5 @@ Disabled since it was picking up right-clicks as strokes.
  ;; If there is more than one, they won't work right.
  )
  #+END_SRC
+Wrong type argument: integer-or-marker-p, nil
+x
