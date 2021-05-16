@@ -126,6 +126,29 @@ modify it."
 
 (setq pdf-view-restore-filename "~/.emacs.d/.pdf-view-restore")
 
+(setq org-hide-emphasis-markers t)
+(let* ((variable-tuple
+          (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
+                ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+                ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+                ((x-list-fonts "Verdana")         '(:font "Verdana"))
+                ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+                (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+         (base-font-color     (face-foreground 'default nil 'default))
+         (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
+    (custom-theme-set-faces
+     'user
+     `(org-level-8 ((t (,@headline ,@variable-tuple))))
+     `(org-level-7 ((t (,@headline ,@variable-tuple))))
+     `(org-level-6 ((t (,@headline ,@variable-tuple))))
+     `(org-level-5 ((t (,@headline ,@variable-tuple))))
+     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.15))))
+     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.25))))
+     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+
 (defun my/haskell-extract-type-alias (type-name)
   (interactive "*sName for type alias: ")
   (let (chosen-symbol bounds start-pt end-pt)
@@ -229,39 +252,10 @@ modify it."
 (defalias 'eshell/vi 'find-file-other-window)  ;; :^)
 (defalias 'eshell/vim 'find-file-other-window)
 
-(defun get-or-prompt-to-dir-locals (mode key)
-  (interactive)
-  (if
-      (boundp key)
-      (symbol-value key)
-      (add-dir-local-variable mode key (read-directory-name (concat "Enter name for " (symbol-name key) ": "))))
-)
-
-(defun custom-run-npm ()
-  (interactive)
-  (let ((default-directory (get-or-prompt-to-dir-locals nil 'custom-run-npm-path)))
-    (compile "npm start")
-    (display-buffer-in-side-window "Compilation" '((side . right)))
-  )
-)
-
-(defun open-current-file ()
-  (interactive)
-  (let ((selected-file (neo-buffer--get-filename-current-line)) (term-buffer (term "/usr/bin/python3")))
-    (set-buffer term-buffer)
-    (term-send-raw-string "import json\n")
-    (term-send-raw-string (format "JSON_FILENAME = r\"%s\"\n" selected-file))
-    (term-send-raw-string "with open(JSON_FILENAME, \"r\") as f:\n")
-    (term-send-raw-string "\tdata = json.load(f)\n\n")
-  ))
-
-;; Lazy run commands
-(map! :leader
-      (:prefix ("r" . "run")
-       :desc "Run npm start" "n" #'custom-run-npm
-       ))
-
-(evil-define-key 'normal neotree-mode-map (kbd "j") 'open-current-file)
+(defun eshell/x ()
+    (insert "exit")
+    (eshell-send-input)
+    (delete-window))
 
 (map! :map evil-window-map "<up>" #'evil-window-up)
 (map! :map evil-window-map "<down>" #'evil-window-down)
@@ -344,18 +338,6 @@ modify it."
 (evil-define-minor-mode-key 'normal 'org-src-mode "q" 'org-edit-src-abort)
 (evil-define-minor-mode-key 'normal 'org-src-mode "}}" 'my/jump-to-next-ob-code-block)
 (evil-define-minor-mode-key 'normal 'org-src-mode "{{" 'my/jump-to-prev-ob-code-block)
-
-(setq gdscript-godot-executable "~/Godot_v3.2.1-stable_x11.64")
-
-;; (use-package! evil-owl
-;;   :config
-;;   (setq evil-owl-max-string-length 500)
-;;   (add-to-list 'display-buffer-alist
-;;                '("*evil-owl*"
-;;                  (display-buffer-in-side-window)
-;;                  (side . bottom)
-;;                  (window-height . 0.3)))
-;;   (evil-owl-mode))
 
 (setq lsp-gopls-staticcheck t)
 (setq lsp-eldoc-render-all t)

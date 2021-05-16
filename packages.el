@@ -37,7 +37,7 @@
 (package! dired-hacks)
 (package! sr-speedbar)
 
-(package! valign)
+(package! org-bullets)
 
 (when (string= system-type "gnu/linux")
         (package! emacs-application-framework
