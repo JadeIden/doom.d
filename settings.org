@@ -133,10 +133,10 @@ Go up a level with =..= .
 *** Easier error navigation with Alt + arrow keys
 #+begin_src emacs-lisp :results none
 (map! :map flycheck-mode-map
-      "M-<down>" #'next-error
-      "M-<right>" #'next-error
-      "M-<up>" #'previous-error
-      "M-<left>" #'previous-error)
+      "M-<down>" #'flycheck-next-error
+      "M-<right>" #'flycheck-next-error
+      "M-<up>" #'flycheck-previous-error
+      "M-<left>" #'flycheck-previous-error)
 #+end_src
 *** Open dired in current folder
 #+begin_src emacs-lisp :results none
@@ -328,6 +328,14 @@ Automatically update PDF previews on file change
 #+begin_src emacs-lisp :results none
 (defalias 'eshell/vi 'find-file-other-window)  ;; :^)
 (defalias 'eshell/vim 'find-file-other-window)
+#+end_src
+*** Quick exit
+Credit to http://www.howardism.org/Technical/Emacs/eshell-fun.html
+#+begin_src emacs-lisp :results none
+(defun eshell/x ()
+    (insert "exit")
+    (eshell-send-input)
+    (delete-window))
 #+end_src
 ** TODO uncategorized
 #+begin_src emacs-lisp :results none

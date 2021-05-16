@@ -29,7 +29,7 @@ modify it."
 ;; TODO: this causes runtime errors, since defservlet* is a macro!
 (after! simple-httpd
     '(defservlet* capture/:keys/:txt text/plain ()
-       (org-capture-string txt keys)))
+     (org-capture-string txt keys)))
 
 (setq doom-theme 'doom-monokai-pro)
 
@@ -80,10 +80,10 @@ modify it."
 (setq helm-ff-skip-git-ignored-files t)
 
 (map! :map flycheck-mode-map
-      "M-<down>" #'next-error
-      "M-<right>" #'next-error
-      "M-<up>" #'previous-error
-      "M-<left>" #'previous-error)
+      "M-<down>" #'flycheck-next-error
+      "M-<right>" #'flycheck-next-error
+      "M-<up>" #'flycheck-previous-error
+      "M-<left>" #'flycheck-previous-error)
 
 (defun my/dired-here ()
   (interactive)
