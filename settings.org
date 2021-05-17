@@ -51,6 +51,20 @@ with the template <keys>. Run =M-x httpd-start= to start the server.
     '(defservlet* capture/:keys/:txt text/plain ()
      (org-capture-string txt keys)))
 #+end_src
+** TODO Extract Haskell package name from Flycheck error
+One day, I'll get around to turning this into an attrap fixer. Today is not that day.
+#+begin_src emacs-lisp :results none
+(defun my/extract-package-name-from-flycheck-error ()
+  (interactive)
+  (let ((err-at-point (call-interactively #'flycheck-copy-errors-as-kill)))
+    (with-temp-buffer
+      (insert err-at-point)
+      (search-backward-regexp "It is a member of the hidden package")
+      (let ((matching-line (thing-at-point 'line)))
+        (save-match-data
+          (and (string-match "‘\\(.+\\)’" matching-line)
+               (kill-new (match-string 1 matching-line))))))))
+#+end_src
 * The actual config
 ** Theming
 #+begin_src emacs-lisp :results none
@@ -200,7 +214,8 @@ Credit to https://zzamboni.org/post/beautifying-org-mode-in-emacs/
 #+begin_src emacs-lisp :results none
 (setq org-hide-emphasis-markers t)
 (add-hook 'org-mode-hook 'org-bullets-mode)
-(let* ((variable-tuple
+(when (display-graphic-p)
+  (let* ((variable-tuple
           (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
                 ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
                 ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
@@ -220,7 +235,7 @@ Credit to https://zzamboni.org/post/beautifying-org-mode-in-emacs/
      `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.15))))
      `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.25))))
      `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil)))))))
 
 #+end_src
 ** Haskell
@@ -525,5 +540,3 @@ Disabled since it was picking up right-clicks as strokes.
  ;; If there is more than one, they won't work right.
  )
  #+END_SRC
-Wrong type argument: integer-or-marker-p, nil
-x

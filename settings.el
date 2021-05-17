@@ -31,6 +31,17 @@ modify it."
     '(defservlet* capture/:keys/:txt text/plain ()
      (org-capture-string txt keys)))
 
+(defun my/extract-package-name-from-flycheck-error ()
+  (interactive)
+  (let ((err-at-point (call-interactively #'flycheck-copy-errors-as-kill)))
+    (with-temp-buffer
+      (insert err-at-point)
+      (search-backward-regexp "It is a member of the hidden package")
+      (let ((matching-line (thing-at-point 'line)))
+        (save-match-data
+          (and (string-match "‘\\(.+\\)’" matching-line)
+               (kill-new (match-string 1 matching-line))))))))
+
 (setq doom-theme 'doom-monokai-pro)
 
 (setq display-line-numbers-type 'relative)
@@ -127,7 +138,9 @@ modify it."
 (setq pdf-view-restore-filename "~/.emacs.d/.pdf-view-restore")
 
 (setq org-hide-emphasis-markers t)
-(let* ((variable-tuple
+(add-hook 'org-mode-hook 'org-bullets-mode)
+(when (display-graphic-p)
+  (let* ((variable-tuple
           (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
                 ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
                 ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
@@ -147,7 +160,7 @@ modify it."
      `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.15))))
      `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.25))))
      `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil)))))))
 
 (defun my/haskell-extract-type-alias (type-name)
   (interactive "*sName for type alias: ")
