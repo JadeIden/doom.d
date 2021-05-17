@@ -172,6 +172,18 @@ Go up a level with =..= .
         (funcall-interactively #'projectile-add-known-project new-dirname)))
 (map! :map doom-leader-project-map "n" #'my/create-lazy-project)
 #+end_src
+*** Open =eww= in side window for more natural =helm-dash=
+Credit to https://www.simplify.ba/articles/2016/01/25/display-buffer-alist/
+#+begin_src emacs-lisp :results none
+(add-to-list 'display-buffer-alist
+            `(,"^\\*eww\\*"
+                (display-buffer-reuse-window
+                display-buffer-in-side-window)
+                (reusable-frames     . visible)
+                (side                . right)
+                (window-height       . 0.45)
+                ))
+#+end_src
 ** Org
 *** Boilerplate settings
 #+begin_src emacs-lisp :results none
