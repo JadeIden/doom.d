@@ -38,6 +38,10 @@
 (package! sr-speedbar)
 
 (package! org-bullets)
+(package! dap-mode)
+
+(package! evil-targets
+  :recipe (:host github :repo "noctuid/targets.el"))
 
 (when (string= system-type "gnu/linux")
         (package! emacs-application-framework

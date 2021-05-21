@@ -110,6 +110,25 @@ modify it."
         (funcall-interactively #'projectile-add-known-project new-dirname)))
 (map! :map doom-leader-project-map "n" #'my/create-lazy-project)
 
+(add-to-list 'display-buffer-alist
+            `(,"^\\*eww\\*"
+                (display-buffer-reuse-window
+                display-buffer-in-side-window)
+                (reusable-frames     . visible)
+                (side                . right)
+                (window-height       . 0.45)
+                ))
+
+(add-to-list 'display-buffer-alist
+            `(,"^\\*ob-ipython-inspect\\*"
+                (display-buffer-reuse-window
+                display-buffer-in-side-window)
+                (reusable-frames     . visible)
+                (side                . right)
+                (window-height       . 0.40)
+                ))
+(map! :map org-mode-map "C-c ." :desc "Inspect" #'ob-ipython-inspect)
+
 (setq org-directory "~/org/")
 
 ;; (defun my/org-agenda-sidebar ()

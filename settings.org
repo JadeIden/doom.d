@@ -184,6 +184,19 @@ Credit to https://www.simplify.ba/articles/2016/01/25/display-buffer-alist/
                 (window-height       . 0.45)
                 ))
 #+end_src
+*** =ob-ipython-inspect= niceness
+#+begin_src emacs-lisp :results none
+(add-to-list 'display-buffer-alist
+            `(,"^\\*ob-ipython-inspect\\*"
+                (display-buffer-reuse-window
+                display-buffer-in-side-window)
+                (reusable-frames     . visible)
+                (side                . right)
+                (window-height       . 0.40)
+                ))
+(map! :map org-mode-map "C-c ." :desc "Inspect" #'ob-ipython-inspect)
+#+end_src
+
 ** Org
 *** Boilerplate settings
 #+begin_src emacs-lisp :results none
