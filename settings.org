@@ -565,3 +565,20 @@ Disabled since it was picking up right-clicks as strokes.
  ;; If there is more than one, they won't work right.
  )
  #+END_SRC
+
+* In progress
+** TODO Map creation from anywhere
+Ideal workflow: run a command that asks the user for one of the buffer's current maps, then pops up a buffer in =org-mode=
+with an emacs-lisp org-babel block prefilled with a =(map! :map <chosen map> )= template. Then I can tweak and adjust it to
+my heart's content, hitting =C-c C-c= to test it, and calling org-refile when I'm done to put it in =settings.org= permanently.
+#+begin_src emacs-lisp :results none
+(setq my/interactive-map-template "* Map for =%s=\n#+begin_src emacs-lisp :results raw\n(defun my/%s-command ()\n\t(interactive)\n\t-- TODO: implement me!\n)\n(map! :map %s my/%s-command)\n#+end_src")
+(defun my/interactive-map-open ()
+  (interactive)
+  (let* ((minor-maps (mapcar #'car minor-mode-map-alist))
+         (chosen-map (completing-read "Which map? " (cons (format "%s-map" major-mode) minor-maps))))
+    (switch-to-buffer-other-window (make-temp-name (format "*interactive-mapper*" chosen-map)))
+    (org-mode)
+    (insert (format my/interactive-map-template chosen-map chosen-map chosen-map chosen-map))
+    ))
+#+end_src
