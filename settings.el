@@ -129,25 +129,9 @@ modify it."
                 ))
 (map! :map org-mode-map "C-c ." :desc "Inspect" #'ob-ipython-inspect)
 
+(add-hook 'after-init-hook 'company-tng-mode)
+
 (setq org-directory "~/org/")
-
-;; (defun my/org-agenda-sidebar ()
-;;   (interactive)
-;;   (let (())
-;;     (call-interactively 'org-sidebar-ql )
-;;   )
-;; )
-(map! :map doom-leader-open-map "o" #'org-sidebar-tree-toggle)
-
-;; (defun my/open-todays-file ()
-;;   (interactive)
-;;   (find-file (expand-file-name (concat org-roam-directory "/" (format-time-string "%Y-%m-%d.org"))))
-;; )
-
-;; (map! :map doom-leader-notes-map (:prefix ("r" . "roam")
-;;                                   :desc "Find file" "f" #'org-roam-find-file
-;;                                   :desc "Open today's file" "r" #'my/open-todays-file
-;;                                   ))
 
 (use-package pdf-view-restore
   :after pdf-tools
@@ -155,31 +139,6 @@ modify it."
   (add-hook 'pdf-view-mode-hook 'pdf-view-restore-mode))
 
 (setq pdf-view-restore-filename "~/.emacs.d/.pdf-view-restore")
-
-(setq org-hide-emphasis-markers t)
-(add-hook 'org-mode-hook 'org-bullets-mode)
-(when (display-graphic-p)
-  (let* ((variable-tuple
-          (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
-                ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-                ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-                ((x-list-fonts "Verdana")         '(:font "Verdana"))
-                ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-                (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-         (base-font-color     (face-foreground 'default nil 'default))
-         (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
-
-    (custom-theme-set-faces
-     'user
-     `(org-level-8 ((t (,@headline ,@variable-tuple))))
-     `(org-level-7 ((t (,@headline ,@variable-tuple))))
-     `(org-level-6 ((t (,@headline ,@variable-tuple))))
-     `(org-level-5 ((t (,@headline ,@variable-tuple))))
-     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
-     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.15))))
-     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.25))))
-     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil)))))))
 
 (defun my/haskell-extract-type-alias (type-name)
   (interactive "*sName for type alias: ")
@@ -247,7 +206,8 @@ modify it."
     (haskell-cabal-add-dependency
      (format "%s >= %s" package-name
              (completing-read "Which version?"
-                              (reverse (my//get-haskage-package-versions package-name))))))
+                              (reverse (my//get-haskage-package-versions package-name)))))
+    (dante-restart))
 
 (map! :after haskell-mode
       :map haskell-mode-map
@@ -284,10 +244,20 @@ modify it."
 (defalias 'eshell/vi 'find-file-other-window)  ;; :^)
 (defalias 'eshell/vim 'find-file-other-window)
 
-(defun eshell/x ()
-    (insert "exit")
-    (eshell-send-input)
-    (delete-window))
+(map! :map eshell-mode-map :n "G" #'+eshell/goto-end-of-prompt)
+
+(defun my/query-replace-whole-buffer ()
+  (interactive)
+  (save-excursion
+    (mark-whole-buffer)
+    (call-interactively #'replace-string)
+        ))
+
+(map! "M-SPC" 'embark-act)
+(map! :map embark-active-map "M-SPC" 'my/query-replace-whole-buffer)
+(map! :map embark-variable-map "M-SPC" 'my/query-replace-whole-buffer)
+(map! :map embark-symbol-map "M-SPC" 'my/query-replace-whole-buffer)
+(map! :map embark-general-map "M-SPC" 'my/query-replace-whole-buffer)
 
 (map! :map evil-window-map "<up>" #'evil-window-up)
 (map! :map evil-window-map "<down>" #'evil-window-down)
@@ -371,6 +341,8 @@ modify it."
 (evil-define-minor-mode-key 'normal 'org-src-mode "}}" 'my/jump-to-next-ob-code-block)
 (evil-define-minor-mode-key 'normal 'org-src-mode "{{" 'my/jump-to-prev-ob-code-block)
 
+(setq ob-mermaid-cli-path (expand-file-name "~/node_modules/.bin/mmdc"))
+
 (setq lsp-gopls-staticcheck t)
 (setq lsp-eldoc-render-all t)
 (setq lsp-gopls-complete-unimported t)
@@ -427,3 +399,24 @@ modify it."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+(setq my/interactive-map-template "* Map for =%s=\n#+begin_src emacs-lisp :results raw\n(defun my/%s-command ()\n\t(interactive)\n\t-- TODO: implement me!\n)\n(map! :map %s my/%s-command)\n#+end_src")
+(defun my/interactive-map-open ()
+  (interactive)
+  (let* ((minor-maps (mapcar #'car minor-mode-map-alist))
+         (chosen-map (completing-read "Which map? " (cons (format "%s-map" major-mode) minor-maps))))
+    (switch-to-buffer-other-window (make-temp-name (format "*interactive-mapper*" chosen-map)))
+    (org-mode)
+    (insert (format my/interactive-map-template chosen-map chosen-map chosen-map chosen-map))
+    ))
+
+(defun my/delete-frame-if-only-window ()
+  (when (eq (length (window-list)) 1)
+    (delete-frame)))
+(add-hook 'org-capture-after-finalize-hook #'my/delete-frame-if-only-window)
+(defun my/make-capture-frame ()
+  (interactive)
+  (make-frame '((name . "emacs-capture")))
+  (select-frame-by-name "emacs-capture")
+  (org-capture)
+  )

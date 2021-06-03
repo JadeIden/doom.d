@@ -10,6 +10,12 @@
 ** AwesomeWM
 [[file:~/.config/awesome/rc.org][rc.org]]
 [[file:~/.config/awesome/mytheme.org][mytheme.org]]
+** XMonad
+[[file:~/.xmonad/xmonad.hs][xmonad.hs]]
+[[file:~/.xmonad/lib/][lib directory]]
+[[file:~/.xmonad/session][XMonad autostart]]
+** Polybar
+[[file:~/.config/polybar/config][config]]
 * Helpers
 ** Buffer create/switch function generator
 From reddit https://www.reddit.com/r/emacs/comments/l4v1ux/one_of_the_most_useful_small_lisp_functions_in_my/
@@ -64,6 +70,23 @@ One day, I'll get around to turning this into an attrap fixer. Today is not that
         (save-match-data
           (and (string-match "‘\\(.+\\)’" matching-line)
                (kill-new (match-string 1 matching-line))))))))
+#+end_src
+** Org capture popup frame
+Usage: call "emacsclient --eval '(my/make-capture-frame)'"
+#+begin_src emacs-lisp :results none
+(defun my/delete-frame-if-only-window ()
+  (when (eq (length (window-list)) 1)
+    (delete-frame)))
+
+(add-hook 'org-capture-after-finalize-hook #'my/delete-frame-if-only-window)
+
+(defun my/make-capture-frame ()
+  (interactive)
+  (make-frame '((name . "emacs-capture")))
+  (select-frame-by-name "emacs-capture")
+  (org-capture)
+  (delete-other-windows)
+  )
 #+end_src
 * The actual config
 ** Theming
@@ -197,33 +220,15 @@ Credit to https://www.simplify.ba/articles/2016/01/25/display-buffer-alist/
 (map! :map org-mode-map "C-c ." :desc "Inspect" #'ob-ipython-inspect)
 #+end_src
 
+*** Mini-company TNG mode
+The one built into Doom breaks my config, so instead I just enable it myself:
+#+begin_src emacs-lisp :results none
+(add-hook 'after-init-hook 'company-tng-mode)
+#+end_src
 ** Org
 *** Boilerplate settings
 #+begin_src emacs-lisp :results none
 (setq org-directory "~/org/")
-#+end_src
-*** Org sidebar keybind
-#+begin_src emacs-lisp :results none
-;; (defun my/org-agenda-sidebar ()
-;;   (interactive)
-;;   (let (())
-;;     (call-interactively 'org-sidebar-ql )
-;;   )
-;; )
-(map! :map doom-leader-open-map "o" #'org-sidebar-tree-toggle)
-#+end_src
-*** (retired) Org Roam bindings
-This was added before I learned Doom's org module does, in fact, support Org Roam.
-#+begin_src emacs-lisp :results none
-;; (defun my/open-todays-file ()
-;;   (interactive)
-;;   (find-file (expand-file-name (concat org-roam-directory "/" (format-time-string "%Y-%m-%d.org"))))
-;; )
-
-;; (map! :map doom-leader-notes-map (:prefix ("r" . "roam")
-;;                                   :desc "Find file" "f" #'org-roam-find-file
-;;                                   :desc "Open today's file" "r" #'my/open-todays-file
-;;                                   ))
 #+end_src
 *** Reopen PDF where you left off
 #+begin_src emacs-lisp :results none
@@ -233,35 +238,6 @@ This was added before I learned Doom's org module does, in fact, support Org Roa
   (add-hook 'pdf-view-mode-hook 'pdf-view-restore-mode))
 
 (setq pdf-view-restore-filename "~/.emacs.d/.pdf-view-restore")
-#+end_src
-*** Prettiness
-Credit to https://zzamboni.org/post/beautifying-org-mode-in-emacs/
-#+begin_src emacs-lisp :results none
-(setq org-hide-emphasis-markers t)
-(add-hook 'org-mode-hook 'org-bullets-mode)
-(when (display-graphic-p)
-  (let* ((variable-tuple
-          (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
-                ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-                ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-                ((x-list-fonts "Verdana")         '(:font "Verdana"))
-                ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-                (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-         (base-font-color     (face-foreground 'default nil 'default))
-         (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
-
-    (custom-theme-set-faces
-     'user
-     `(org-level-8 ((t (,@headline ,@variable-tuple))))
-     `(org-level-7 ((t (,@headline ,@variable-tuple))))
-     `(org-level-6 ((t (,@headline ,@variable-tuple))))
-     `(org-level-5 ((t (,@headline ,@variable-tuple))))
-     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
-     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.15))))
-     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.25))))
-     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.35))))
-     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil)))))))
-
 #+end_src
 ** Haskell
 *** Extract type alias from word under point
@@ -343,7 +319,8 @@ This uses a helper script I put in ~/scripts/get-hackage-versions.py.
     (haskell-cabal-add-dependency
      (format "%s >= %s" package-name
              (completing-read "Which version?"
-                              (reverse (my//get-haskage-package-versions package-name))))))
+                              (reverse (my//get-haskage-package-versions package-name)))))
+    (dante-restart))
 
 (map! :after haskell-mode
       :map haskell-mode-map
@@ -397,13 +374,24 @@ Automatically update PDF previews on file change
 (defalias 'eshell/vi 'find-file-other-window)  ;; :^)
 (defalias 'eshell/vim 'find-file-other-window)
 #+end_src
-*** Quick exit
-Credit to http://www.howardism.org/Technical/Emacs/eshell-fun.html
+*** Quick return to prompt
 #+begin_src emacs-lisp :results none
-(defun eshell/x ()
-    (insert "exit")
-    (eshell-send-input)
-    (delete-window))
+(map! :map eshell-mode-map :n "G" #'+eshell/goto-end-of-prompt)
+#+end_src
+** Embark
+#+begin_src emacs-lisp :results none
+(defun my/query-replace-whole-buffer ()
+  (interactive)
+  (save-excursion
+    (mark-whole-buffer)
+    (call-interactively #'replace-string)
+        ))
+
+(map! "M-SPC" 'embark-act)
+(map! :map embark-active-map "M-SPC" 'my/query-replace-whole-buffer)
+(map! :map embark-variable-map "M-SPC" 'my/query-replace-whole-buffer)
+(map! :map embark-symbol-map "M-SPC" 'my/query-replace-whole-buffer)
+(map! :map embark-general-map "M-SPC" 'my/query-replace-whole-buffer)
 #+end_src
 ** Modified evil bindings
 *** Window switching
@@ -497,6 +485,10 @@ Helper function that enters an org src block if necessary, then calls the fn.
 (evil-define-minor-mode-key 'normal 'org-src-mode "}}" 'my/jump-to-next-ob-code-block)
 (evil-define-minor-mode-key 'normal 'org-src-mode "{{" 'my/jump-to-prev-ob-code-block)
 #+end_src
+** Ob-mermaid
+#+begin_src emacs-lisp :results none
+(setq ob-mermaid-cli-path (expand-file-name "~/node_modules/.bin/mmdc"))
+#+end_src
 ** TODO Go LSP configuration
 Out of the box, the LSP for Go had some weird behavior. When I go back to Go dev,
 I should figure out what exactly I do and do not need.
@@ -566,6 +558,7 @@ Disabled since it was picking up right-clicks as strokes.
  )
  #+END_SRC
 
+ ***
 * In progress
 ** TODO Map creation from anywhere
 Ideal workflow: run a command that asks the user for one of the buffer's current maps, then pops up a buffer in =org-mode=
@@ -582,3 +575,4 @@ my heart's content, hitting =C-c C-c= to test it, and calling org-refile when I'
     (insert (format my/interactive-map-template chosen-map chosen-map chosen-map chosen-map))
     ))
 #+end_src
+

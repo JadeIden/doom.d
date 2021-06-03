@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: sqlc
+# uuid: sqlc
+# --
+
+Column('$1', $2)

@@ -40,6 +40,10 @@
 (package! org-bullets)
 (package! dap-mode)
 
+(package! ob-mermaid)
+
+(package! embark)
+
 (package! evil-targets
   :recipe (:host github :repo "noctuid/targets.el"))
 
